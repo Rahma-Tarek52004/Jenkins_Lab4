@@ -26,7 +26,7 @@ pipeline {
                 echo "Checking out branch: ${BRANCH_NAME}"
 
                 git branch: "${BRANCH_NAME}",
-                    url: 'https://github.com/Rahma-Tarek52004/Jenkins_Lab3.git'
+                    url: 'https://github.com/Rahma-Tarek52004/Jenkins_Lab4.git'
             }
         }
 
