@@ -1,3 +1,4 @@
+
 pipeline {
 
     agent any
@@ -22,10 +23,9 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Checking out branch: ${git_branch}"
+                echo "Checking out branch: ${BRANCH_NAME}"
 
-                git branch: "${git_branch}",
-                    url: 'https://github.com/Rahma-Tarek52004/Jenkins_Lab4.git'
+                checkout scm
             }
         }
 
@@ -181,7 +181,7 @@ pipeline {
             echo "========================================"
             echo "Pipeline completed successfully!"
             echo "========================================"
-            echo "Branch: ${git_branch}"
+            echo "Branch: ${BRANCH_NAME}"
             echo "Docker Image: ${DOCKER_IMAGE}"
             echo "Application: http://localhost:3000"
             echo "Health Check: http://localhost:3000/health"
@@ -192,7 +192,7 @@ pipeline {
             echo "========================================"
             echo "Pipeline failed!"
             echo "========================================"
-            echo "Branch: ${git_branch}"
+            echo "Branch: ${BRANCH_NAME}"
             echo "Check the failed stage above."
             echo "========================================"
         }
@@ -204,3 +204,4 @@ pipeline {
         }
     }
 }
+
