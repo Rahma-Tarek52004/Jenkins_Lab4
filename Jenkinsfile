@@ -23,9 +23,9 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Checking out branch: ${git_branch}"
+                echo "Checking out branch: ${BRANCH_NAME}"
 
-                git branch: "${git_branch}",
+                git branch: "${BRANCH_NAME}",
                     url: 'https://github.com/Rahma-Tarek52004/Jenkins_Lab3.git'
             }
         }
@@ -53,6 +53,8 @@ pipeline {
                         -w /app \
                         node:22-slim \
                         node --check index.js
+
+                    echo "Node.js syntax check passed!"
                 '''
             }
         }
@@ -81,15 +83,21 @@ pipeline {
 
         stage('Tag Docker Image') {
             steps {
-                docker tag \
-                    ${IMAGE_NAME}:${IMAGE_TAG} \
-                    ${DOCKER_IMAGE}
+                sh '''
+                    echo "Tagging Docker image..."
+
+                    docker tag \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        ${DOCKER_IMAGE}
+                '''
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 sh '''
+                    echo "Pushing Docker image..."
+
                     docker push ${DOCKER_IMAGE}
                 '''
             }
@@ -119,7 +127,7 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
-                    echo "Waiting for application to start..."
+                    echo "Waiting for Node.js application to start..."
 
                     sleep 5
 
@@ -139,7 +147,7 @@ pipeline {
         success {
             echo "========================================"
             echo "Pipeline completed successfully!"
-            echo "Branch: ${git_branch}"
+            echo "Branch: ${BRANCH_NAME}"
             echo "Docker Image: ${DOCKER_IMAGE}"
             echo "Application: http://localhost:3000"
             echo "========================================"
@@ -148,7 +156,7 @@ pipeline {
         failure {
             echo "========================================"
             echo "Pipeline failed!"
-            echo "Branch: ${git_branch}"
+            echo "Branch: ${BRANCH_NAME}"
             echo "Check the stage that failed above."
             echo "========================================"
         }
@@ -160,3 +168,4 @@ pipeline {
         }
     }
 }
+
