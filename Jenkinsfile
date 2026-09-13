@@ -1,4 +1,3 @@
-
 pipeline {
 
     agent any
@@ -26,13 +25,17 @@ pipeline {
                 echo "Checking out branch: ${git_branch}"
 
                 git branch: "${git_branch}",
-                    url: 'https://github.com/Rahma-Tarek52004/Jenkins_Lab3.git'
+                    url: 'https://github.com/Rahma-Tarek52004/Jenkins_Lab4.git'
             }
         }
 
         stage('Check Docker') {
             steps {
                 sh '''
+                    echo "========================================"
+                    echo "Checking Docker"
+                    echo "========================================"
+
                     echo "Docker version:"
                     docker version
 
@@ -46,13 +49,17 @@ pipeline {
         stage('Test Node.js') {
             steps {
                 sh '''
-                    echo "Testing Node.js application..."
+                    echo "========================================"
+                    echo "Testing Node.js application"
+                    echo "========================================"
 
                     docker run --rm \
                         -v "$(pwd):/app" \
                         -w /app \
                         node:22-slim \
                         node --check index.js
+
+                    echo "Node.js syntax check passed!"
                 '''
             }
         }
@@ -60,11 +67,15 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    echo "Building Docker image..."
+                    echo "========================================"
+                    echo "Building Docker image"
+                    echo "========================================"
 
                     DOCKER_BUILDKIT=0 docker build \
                         --no-cache \
                         -t ${IMAGE_NAME}:${IMAGE_TAG} .
+
+                    echo "Docker image built successfully!"
                 '''
             }
         }
@@ -72,25 +83,45 @@ pipeline {
         stage('Docker Login') {
             steps {
                 sh '''
+                    echo "========================================"
+                    echo "Logging in to Docker Hub"
+                    echo "========================================"
+
                     echo "${DOCKER_CREDENTIALS_PSW}" | docker login \
                         -u "${DOCKER_CREDENTIALS_USR}" \
                         --password-stdin
+
+                    echo "Docker login successful!"
                 '''
             }
         }
 
         stage('Tag Docker Image') {
             steps {
-                docker tag \
-                    ${IMAGE_NAME}:${IMAGE_TAG} \
-                    ${DOCKER_IMAGE}
+                sh '''
+                    echo "========================================"
+                    echo "Tagging Docker image"
+                    echo "========================================"
+
+                    docker tag \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        ${DOCKER_IMAGE}
+
+                    echo "Image tagged as: ${DOCKER_IMAGE}"
+                '''
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 sh '''
+                    echo "========================================"
+                    echo "Pushing Docker image"
+                    echo "========================================"
+
                     docker push ${DOCKER_IMAGE}
+
+                    echo "Docker image pushed successfully!"
                 '''
             }
         }
@@ -98,6 +129,10 @@ pipeline {
         stage('Run Container') {
             steps {
                 sh '''
+                    echo "========================================"
+                    echo "Running Node.js container"
+                    echo "========================================"
+
                     echo "Removing old container if it exists..."
 
                     docker rm -f ${CONTAINER_NAME} || true
@@ -109,8 +144,10 @@ pipeline {
                         -p 3000:3000 \
                         ${DOCKER_IMAGE}
 
-                    echo "Container started."
+                    echo "Container started successfully."
 
+                    echo ""
+                    echo "Running containers:"
                     docker ps
                 '''
             }
@@ -119,6 +156,10 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
+                    echo "========================================"
+                    echo "Health Check"
+                    echo "========================================"
+
                     echo "Waiting for application to start..."
 
                     sleep 5
@@ -139,17 +180,20 @@ pipeline {
         success {
             echo "========================================"
             echo "Pipeline completed successfully!"
+            echo "========================================"
             echo "Branch: ${git_branch}"
             echo "Docker Image: ${DOCKER_IMAGE}"
             echo "Application: http://localhost:3000"
+            echo "Health Check: http://localhost:3000/health"
             echo "========================================"
         }
 
         failure {
             echo "========================================"
             echo "Pipeline failed!"
+            echo "========================================"
             echo "Branch: ${git_branch}"
-            echo "Check the stage that failed above."
+            echo "Check the failed stage above."
             echo "========================================"
         }
 
